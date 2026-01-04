@@ -15,4 +15,4 @@ using AutoUnlinkListHook = IntrusiveListNode<Tag, LinkMode::AutoUnlink>;
 
 
 template <typename Tag = void>
-using UnsafeListHook = IntrusiveListNode<Tag, LinkMode::NoLink>;
+using UnsafeListHook = IntrusiveListNode<Tag, LinkMode::Raw>;

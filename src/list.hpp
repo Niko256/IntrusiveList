@@ -7,6 +7,19 @@
 #include <type_traits>
 
 
+/**
+ *
+ * @section PHILOSOPHY
+ * Unlike standart containers (like std::list), an Intrusive List doesn't manage
+ * memory lifetimes of the objects it stores. Instead, the linkage metadata (like 'prev' and 'next' fields)
+ * are embedded directly within the stored object itself.
+ *
+ * This approach has significant advantages:
+ *  |> Zero Allocations on push/pop operations
+ *  |> Memory Locality
+ *
+ */
+
 /* ------------------------------------------------------------------- */
 
 template <typename T, typename Tag>
@@ -120,3 +133,5 @@ class IntrusiveList {
   private:
     mutable IntrusiveListNode sentinel_;
 };
+
+/* ------------------------------------------------------------------- */
