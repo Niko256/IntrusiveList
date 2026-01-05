@@ -14,6 +14,14 @@ concept LinkPolicy = requires(typename P::State s, const typename P::State cs) {
 
 /* ------------------------------------------------------------------- */
 
+/**
+ * @section DANGER_AND_SAFETY
+ * The biggest risk in intrusive containers is the 'dangling pointer'
+ * If a Node is destroyed while still being linked in a list
+ * => the list becomes corrupted => undefined behavior
+ *
+ * To avoid this problem, this class provides different safety policies.
+ */
 
 struct NoTrackPolicy {
     struct State {};
@@ -44,6 +52,10 @@ struct TrackingPolicy {
 
     static constexpr const char* name() noexcept { return "Link"; }
 };
+
+/*
+ * ...
+ */
 
 /* ------------------------------------------------------------------- */
 

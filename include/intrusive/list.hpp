@@ -1,5 +1,6 @@
 #pragma once
 
+#include "base_node.hpp"
 #include "iterator.hpp"
 #include "node.hpp"
 #include "policies.hpp"
@@ -85,10 +86,21 @@ class IntrusiveList {
 
     void clear() noexcept;
 
+    /**
+     * @brief Transfer all elements from outer list before specific position.
+     */
     void splice(const_iterator pos, IntrusiveList& other) noexcept;
 
+    /**
+     * @brief Transfer single element.
+     *
+     * Equivalent to splice_range() with single-element range.
+     */
     void splice_cell(const_iterator pos, IntrusiveList& other, const_iterator element) noexcept;
 
+    /**
+     * @brief Transfer range of elements [first, last) from other to this list, inserting before specific position
+     */
     void splice_range(const_iterator pos, IntrusiveList& other, const_iterator first, const_iterator last) noexcept;
 
     [[nodiscard]]
@@ -100,15 +112,22 @@ class IntrusiveList {
     [[nodiscard]]
     auto extract_front(IntrusiveList& out, size_type max_cnt) noexcept -> size_type;
 
+    /**
+     * @brief Static removal of an element from ANY list.
+     * This method enables objects to remove themselves without needing a ref to their containing list.
+     *
+     * @param Reference to the element to remove.
+     */
     static void remove(reference element) noexcept;
 
   private:
-    void insert_after(sentinel_type* after, reference value) noexcept;
+    void insert_after(NodeBase* after, reference value) noexcept;
 
-    void insert_before(sentinel_type* before, reference value) noexcept;
+    void insert_before(NodeBase* before, reference value) noexcept;
 
     /* ------------------------------------------------------------------- */
 
+  public:
     [[nodiscard]] bool empty() const noexcept;
 
     [[nodiscard]]
@@ -149,7 +168,7 @@ class IntrusiveList {
     /* ------------------------------------------------------------------- */
 
   private:
-    mutable sentinel_type sentinel_;
+    NodeBase sentinel_;
 };
 
 /* ------------------------------------------------------------------- */
@@ -166,6 +185,7 @@ IntrusiveList<T, Tag>::~IntrusiveList() {
     /**
      * ...
      */
+    assert(empty() && "Destroying non-empty IntrusiveList. Unlink elements first!!");
 }
 
 template <typename T, typename Tag>
@@ -180,7 +200,7 @@ void IntrusiveList<T, Tag>::init_sentinel() noexcept {
 template <typename T, typename Tag>
     requires HasNodeWithTag<T, Tag>
 bool IntrusiveList<T, Tag>::empty() const noexcept {
-    return sentinel_.next_node() = &sentinel_;
+    return sentinel_.next_node() == &sentinel_;
 }
 
 template <typename T, typename Tag>
@@ -236,13 +256,13 @@ auto IntrusiveList<T, Tag>::begin() noexcept -> typename IntrusiveList<T, Tag>::
      * First element is sentinel.next
      * If list is empty, sentinel.next == &sentinel, so begin() == end()
      */
-    return iterator(static_cast<node_type*>(sentinel_.next_node()));
+    return iterator(sentinel_.next_node());
 }
 
 template <typename T, typename Tag>
     requires HasNodeWithTag<T, Tag>
 auto IntrusiveList<T, Tag>::begin() const noexcept -> typename IntrusiveList<T, Tag>::const_iterator {
-    return iterator(static_cast<node_type*>(sentinel_.next_node()));
+    return const_iterator(sentinel_.next_node());
 }
 
 template <typename T, typename Tag>
@@ -256,17 +276,14 @@ template <typename T, typename Tag>
 auto IntrusiveList<T, Tag>::end() noexcept -> typename IntrusiveList<T, Tag>::iterator {
     /**
      * end() points to the sentinel
-     * but since sentinel_type and node_type are not the same,
-     * we use reinterpret_cast in order to have the same mem layout.
-     * They differs only in policy and handler which don't affect to layout
      */
-    return reinterpret_cast<node_type*>(&sentinel_);
+    return iterator(&sentinel_);
 }
 
 template <typename T, typename Tag>
     requires HasNodeWithTag<T, Tag>
 auto IntrusiveList<T, Tag>::end() const noexcept -> typename IntrusiveList<T, Tag>::const_iterator {
-    return reinterpret_cast<const node_type*>(&sentinel_);
+    return const_iterator(const_cast<NodeBase*>(&sentinel_));
 }
 
 template <typename T, typename Tag>
@@ -279,7 +296,7 @@ auto IntrusiveList<T, Tag>::cend() const noexcept -> typename IntrusiveList<T, T
 
 template <typename T, typename Tag>
     requires HasNodeWithTag<T, Tag>
-void IntrusiveList<T, Tag>::insert_after(sentinel_type* after, reference value) noexcept {
+void IntrusiveList<T, Tag>::insert_after(NodeBase* after, reference value) noexcept {
     auto& node = value;
 
     assert(!node.is_linked() && "Element already in a list!!");
@@ -288,14 +305,12 @@ void IntrusiveList<T, Tag>::insert_after(sentinel_type* after, reference value) 
      * Before : after <-> next
      * After : afetr <-> node <-> next
      */
-
-    auto* next = after->next_node();
-    node.link_between(after, next);
+    node.link_between(after, after->next_node());
 }
 
 template <typename T, typename Tag>
     requires HasNodeWithTag<T, Tag>
-void IntrusiveList<T, Tag>::insert_before(sentinel_type* before, reference value) noexcept {
+void IntrusiveList<T, Tag>::insert_before(NodeBase* before, reference value) noexcept {
     auto& node = value;
 
     assert(!node.is_linked() && "Element already in a list!!");
@@ -305,8 +320,7 @@ void IntrusiveList<T, Tag>::insert_before(sentinel_type* before, reference value
      * After : prev <-> node <-> before
      */
 
-    auto* prev = before->prev_node();
-    node.link_between(prev, before);
+    node.link_between(before->prev_node(), before);
 }
 
 /* ------------------------------------------------------------------- */
@@ -337,11 +351,8 @@ auto IntrusiveList<T, Tag>::insert(
     const_iterator pos, reference element) noexcept -> typename IntrusiveList<T, Tag>::iterator {
     /**
      * insert before pos (because inserted node position will become new pos)
-     *
-     * But we need to convert const iterator to mutable node pointer
      */
-    node_type* node_on_pos = const_cast<node_type*>(pos.node());
-    insert_before(reinterpret_cast<sentinel_type*>(node_on_pos), element);
+    insert_before(pos.base(), element);
 
     return iterator(static_cast<node_type*>(&static_cast<node_type&>(element)));
 }
@@ -356,7 +367,7 @@ void IntrusiveList<T, Tag>::pop_front() noexcept {
     /**
      * unlink the first element
      */
-    sentinel_.next_node()->unlink();
+    static_cast<node_type*>(sentinel_.next_node())->unlink();
 }
 
 template <typename T, typename Tag>
@@ -367,7 +378,7 @@ void IntrusiveList<T, Tag>::pop_back() noexcept {
     /**
      * unlink the last element
      */
-    sentinel_.prev_node()->unlink();
+    static_cast<node_type*>(sentinel_.prev_node())->unlink();
 }
 
 template <typename T, typename Tag>
@@ -375,13 +386,13 @@ template <typename T, typename Tag>
 auto IntrusiveList<T, Tag>::erase(const_iterator pos) noexcept -> typename IntrusiveList<T, Tag>::iterator {
     assert(pos != end() && "Cannot erase sentinel...");
 
-    node_type* node = static_cast<node_type*>(pos.node());
-    node_type* next_node = static_cast<node_type*>(node->next_node());
+    NodeBase* node = pos.base();
+    NodeBase* next = node->next_node();
 
-    node->unlink();
+    static_cast<node_type*>(node)->unlink();
 
     /* return the iterator to the element that followed the erased one */
-    return iterator(next_node);
+    return iterator(next);
 }
 
 template <typename T, typename Tag>
@@ -391,13 +402,137 @@ auto IntrusiveList<T, Tag>::erase_range(const_iterator first, const_iterator las
         erase(first);
     }
 
-    return iterator(const_cast<node_type*>(last.node()));
+    return iterator(last.base());
 }
 
 template <typename T, typename Tag>
     requires HasNodeWithTag<T, Tag>
 void IntrusiveList<T, Tag>::clear() noexcept {
+    /*
+     * remove all elements one by one
+     */
     while (!empty()) {
         pop_front();
     }
+}
+
+/* ------------------------------------------------------------------- */
+
+template <typename T, typename Tag>
+    requires HasNodeWithTag<T, Tag>
+auto IntrusiveList<T, Tag>::try_pop_front() noexcept -> typename IntrusiveList<T, Tag>::pointer {
+    if (empty()) {
+        return nullptr;
+    }
+
+    pointer result = &(front());
+    pop_front();
+
+    return result;
+}
+
+template <typename T, typename Tag>
+    requires HasNodeWithTag<T, Tag>
+auto IntrusiveList<T, Tag>::try_pop_back() noexcept -> typename IntrusiveList<T, Tag>::pointer {
+    if (empty()) {
+        return nullptr;
+    }
+
+    pointer res = &(begin());
+    pop_back();
+
+    return res;
+}
+
+template <typename T, typename Tag>
+    requires HasNodeWithTag<T, Tag>
+auto IntrusiveList<T, Tag>::extract_front(IntrusiveList& out, size_type max_cnt) noexcept -> typename IntrusiveList<T, Tag>::size_type {
+    /*
+     * Extract up max_cnt elements from the front to the end of outer list
+     */
+
+    size_type count = 0;
+    auto split_point = begin();
+
+    /* find where to split */
+    while (split_point != end() && count < max_cnt) {
+        ++split_point;
+        ++count;
+    }
+
+    /* transfer [begin, split_point) to the outer list */
+    if (count > 0) {
+        splice_range(out.end(), *this, begin(), split_point);
+    }
+
+    return count;
+}
+
+template <typename T, typename Tag>
+    requires HasNodeWithTag<T, Tag>
+void IntrusiveList<T, Tag>::remove(reference element) noexcept {
+    /*
+     * derived-to-base conversion : T& -> IntrusiveListNode<...>&
+     * [T must inherit from IntrusiveListNode<>]
+     *
+     * Magic : this conversion unlocks self-removal because
+     * any T can access its embedded list node without knowing specific list containing it.
+     * => IntrusiveList<Task>::remove(*this);
+     */
+    node_type& node = element;
+
+    if (node.is_linked()) {
+        node.unlink();
+    }
+}
+
+/* ------------------------------------------------------------------- */
+
+template <typename T, typename Tag>
+    requires HasNodeWithTag<T, Tag>
+void IntrusiveList<T, Tag>::splice_range(
+    const_iterator position, IntrusiveList& other,
+    const_iterator first, const_iterator last) noexcept {
+
+    /*
+     * Before :
+     *    other list : ... <-> before <-> [first <-> ... <-> last] <-> after <-> ...
+     *
+     *    this list : ... <-> before' <-> position <-> after' <-> ...
+     *
+     * After :
+     *    other list : ... <-> before <-> after <-> ...
+     *
+     *    this list : ... <-> before' <-> [first <-> ... <-> last] <-> position <-> after' <-> ...
+     */
+
+    transfer_range(position.base(), first.base(), last.base());
+}
+
+template <typename T, typename Tag>
+    requires HasNodeWithTag<T, Tag>
+void IntrusiveList<T, Tag>::splice(const_iterator position, IntrusiveList& other) noexcept {
+    if (other.empty()) {
+        return;
+    }
+
+    if (this != &other) {
+        return;
+    }
+
+    splice_range(position, other, other.begin(), other.end());
+}
+
+template <typename T, typename Tag>
+    requires HasNodeWithTag<T, Tag>
+void IntrusiveList<T, Tag>::splice_cell(const_iterator position, IntrusiveList& other, const_iterator element) noexcept {
+
+    if (element == other.end()) {
+        return;
+    }
+
+    auto next = element;
+    ++next;
+
+    splice_range(position, other, element, next);
 }

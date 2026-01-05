@@ -1,17 +1,9 @@
 #pragma once
 
+#include "base_node.hpp"
 #include "policies.hpp"
 #include <cassert>
-
-/**
- * @section DANGER_AND_SAFETY
- * The biggest risk in intrusive containers is the 'dangling pointer'
- * If a Node is destroyed while still being linked in a list
- * => the list becomes corrupted => undefined behavior
- *
- * To avoid this problem, this class provides different safety policies.
- */
-
+#include <concepts>
 
 /**
  * @brief Intrusive List Node.
@@ -19,11 +11,12 @@
  *
  */
 template <typename Tag = void, LinkPolicy Policy = TrackingPolicy, typename Handler = AutoUnlinkHandler>
-class IntrusiveListNode {
+class IntrusiveListNode : public NodeBase {
   public:
     using tag_type = Tag;
     using policy_type = Policy;
     using destruction_handler = Handler;
+    using state_type = typename Policy::State;
 
     constexpr IntrusiveListNode() noexcept = default;
 
@@ -39,36 +32,33 @@ class IntrusiveListNode {
 
     /* ------------------------------------------------------------------- */
 
+    /**
+     * @brief Checks if this node is currently in a list.
+     */
     [[nodiscard]]
     constexpr bool is_linked() const noexcept;
 
+    /**
+     * @brief Removes this node from its current list.
+     */
     void unlink() noexcept;
 
   private:
+    /**
+     * @brief marks node as linked.
+     */
     constexpr void set_linked() noexcept;
 
+    /**
+     * @brief Link this node this with two others
+     */
     void link_between(IntrusiveListNode* prev, IntrusiveListNode* next) noexcept;
 
     /* ------------------------------------------------------------------- */
 
-    [[nodiscard]]
-    constexpr auto next_node() const noexcept -> IntrusiveListNode*;
-
-    [[nodiscard]]
-    constexpr auto prev_node() const noexcept -> IntrusiveListNode*;
-
-    constexpr void set_next(IntrusiveListNode* n) noexcept;
-
-    constexpr void set_prev(IntrusiveListNode* p) noexcept;
-
-    /* ------------------------------------------------------------------- */
-
   private:
-    IntrusiveListNode* prev_{nullptr};
-    IntrusiveListNode* next_{nullptr};
-
     [[no_unique_address]]
-    typename Policy::State state_;
+    state_type state_;
 
     template <typename, typename>
     friend class IntrusiveList;
@@ -91,50 +81,32 @@ constexpr bool IntrusiveListNode<Tag, Policy, Handler>::is_linked() const noexce
 
 template <typename Tag, LinkPolicy Policy, typename Handler>
 void IntrusiveListNode<Tag, Policy, Handler>::unlink() noexcept {
-    assert(is_linked() && "Attempting to unlink element not in list!!");
 
-    prev_->next_ = next_;
-    next_->prev_ = prev_;
-
-    prev_ = nullptr;
-    next_ = nullptr;
+    if constexpr (std::same_as<Policy, TrackingPolicy>) {
+        assert(is_linked() && "Attempting to unlink element not in list!!");
+    }
 
     /* ................... */
+
+    unlink_base();
     Policy::on_unlink(state_);
+
     /* ................... */
+}
+
+template <typename Tag, LinkPolicy Policy, typename Handler>
+constexpr void IntrusiveListNode<Tag, Policy, Handler>::set_linked() noexcept {
+    Policy::on_link(state_);
 }
 
 template <typename Tag, LinkPolicy Policy, typename Handler>
 void IntrusiveListNode<Tag, Policy, Handler>::link_between(
-    IntrusiveListNode* prev,
-    IntrusiveListNode* next) noexcept {
-    prev->next_ = this;
-    next->prev_ = this;
-
-    this->next_ = next;
-    this->prev_ = prev;
+    IntrusiveListNode* prev, IntrusiveListNode* next) noexcept {
 
     /* ................... */
-    Policy::on_link(state_);
+
+    link_between(prev, next);
+    set_linked();
+
     /* ................... */
-}
-
-template <typename Tag, LinkPolicy Policy, typename Handler>
-constexpr auto IntrusiveListNode<Tag, Policy, Handler>::next_node() const noexcept -> IntrusiveListNode<Tag, Policy, Handler>* {
-    return next_;
-}
-
-template <typename Tag, LinkPolicy Policy, typename Handler>
-constexpr auto IntrusiveListNode<Tag, Policy, Handler>::prev_node() const noexcept -> IntrusiveListNode<Tag, Policy, Handler>* {
-    return prev_;
-}
-
-template <typename Tag, LinkPolicy Policy, typename Handler>
-constexpr void IntrusiveListNode<Tag, Policy, Handler>::set_next(IntrusiveListNode* n) noexcept {
-    next_ = n;
-}
-
-template <typename Tag, LinkPolicy Policy, typename Handler>
-constexpr void IntrusiveListNode<Tag, Policy, Handler>::set_prev(IntrusiveListNode* p) noexcept {
-    prev_ = p;
 }
