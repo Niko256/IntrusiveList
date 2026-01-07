@@ -29,8 +29,7 @@
  */
 template <typename T, typename Tag>
 concept HasNodeWithTag = std::is_base_of_v<
-    IntrusiveListNode<Tag, typename T::policy_type, typename T::destruction_handler>,
-    T>;
+    IntrusiveListNode<Tag, typename T::policy_type, typename T::destruction_handler>, T>;
 
 template <typename T, typename Tag = void>
     requires HasNodeWithTag<T, Tag>

@@ -47,39 +47,41 @@ struct NodeBase {
      */
     [[nodiscard]]
     bool is_linked_base() const noexcept;
+
+    /**
+     * @brief Initializes a node as an empty list sentinel.
+     *
+     * Empty sentinel state: prev and next point to itself.
+     *
+     * */
+    void init_sentinel(NodeBase* sentinel) noexcept;
+
+    /**
+     * @brief Checks if sentinel represents an empty list.
+     */
+    [[nodiscard]]
+    bool is_empty_sentinel(const NodeBase* sentinel) noexcept;
+
+    /**
+     * @brief Transfers range [first, last) before pos.
+     *
+     * @param pos Position to insert before
+     * @param first First node of range to transfer (inclusive)
+     * @param last End of range (exclusive)
+     *
+     *
+     * Before:
+     *   Source: ... <-> before_first <-> [first...actual_last] <-> last <-> ...
+     *   Dest:   ... <-> before_pos <-> pos <-> ...
+     *
+     * After:
+     *   Source: ... <-> before_first <-> last <-> ...
+     *   Dest:   ... <-> before_pos <-> [first...actual_last] <-> pos <-> ...
+     */
+    void transfer_range(NodeBase* pos, NodeBase* first, NodeBase* last) noexcept;
 };
 
-/**
- * @brief Initializes a node as an empty list sentinel.
- *
- * Empty sentinel state: prev and next point to itself.
- *
- * */
-inline void init_sentinel(NodeBase* sentinel) noexcept;
-
-/**
- * @brief Checks if sentinel represents an empty list.
- */
-[[nodiscard]]
-inline bool is_empty_sentinel(const NodeBase* sentinel) noexcept;
-
-/**
- * @brief Transfers range [first, last) before pos.
- *
- * @param pos Position to insert before
- * @param first First node of range to transfer (inclusive)
- * @param last End of range (exclusive)
- *
- *
- * Before:
- *   Source: ... <-> before_first <-> [first...actual_last] <-> last <-> ...
- *   Dest:   ... <-> before_pos <-> pos <-> ...
- *
- * After:
- *   Source: ... <-> before_first <-> last <-> ...
- *   Dest:   ... <-> before_pos <-> [first...actual_last] <-> pos <-> ...
- */
-inline void transfer_range(NodeBase* pos, NodeBase* first, NodeBase* last) noexcept;
+/* ------------------------------------------------------------------- */
 
 inline NodeBase* NodeBase::next_node() noexcept {
     return next_;
