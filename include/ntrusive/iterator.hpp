@@ -1,14 +1,14 @@
 #pragma once
 
 #include "base_node.hpp"
-#include "ntrusive/node.hpp"
+#include "node.hpp"
 #include <cstddef>
 #include <iterator>
 
 /**
  * @brief Bidirectional Iterator for IntrusiveList<...>
  */
-template <typename T, typename Tag>
+template <typename T>
 class ListIterator {
   public:
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
@@ -19,9 +19,7 @@ class ListIterator {
     using pointer = T*;
     using reference = T&;
 
-    using node_type = IntrusiveListNode<Tag,
-                                        typename value_type::policy_type,
-                                        typename value_type::destruction_handler>;
+    using node_type = IntrusiveListNode;
 
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
@@ -48,7 +46,7 @@ class ListIterator {
 
     constexpr bool operator!=(const ListIterator& other) const noexcept;
 
-    operator ListIterator<const value_type, Tag>() const noexcept;
+    operator ListIterator<const value_type>() const noexcept;
 
     [[nodiscard]] constexpr NodeBase* base() const noexcept;
 
@@ -56,18 +54,18 @@ class ListIterator {
     NodeBase* current_{nullptr};
 };
 
-template <typename T, typename Tag>
-using ConstListIterator = ListIterator<const T, const Tag>;
+template <typename T>
+using ConstListIterator = ListIterator<const T>;
 
 /*---*---*---*---*---*---*---*---IMPL---*---*---*---*---*---*---*---*---*/
 
-template <typename T, typename Tag>
-constexpr ListIterator<T, Tag>::ListIterator(NodeBase* hook) noexcept
+template <typename T>
+constexpr ListIterator<T>::ListIterator(NodeBase* hook) noexcept
     : current_(hook) {}
 
-template <typename T, typename Tag>
-constexpr typename ListIterator<T, Tag>::reference
-ListIterator<T, Tag>::operator*() const noexcept {
+template <typename T>
+constexpr typename ListIterator<T>::reference
+ListIterator<T>::operator*() const noexcept {
 
     /**
      *
@@ -78,55 +76,55 @@ ListIterator<T, Tag>::operator*() const noexcept {
     return *static_cast<pointer>(static_cast<node_type*>(current_));
 }
 
-template <typename T, typename Tag>
-constexpr typename ListIterator<T, Tag>::pointer
-ListIterator<T, Tag>::operator->() const noexcept {
+template <typename T>
+constexpr typename ListIterator<T>::pointer
+ListIterator<T>::operator->() const noexcept {
     return static_cast<pointer>(static_cast<node_type*>(current_));
 }
 
-template <typename T, typename Tag>
-constexpr ListIterator<T, Tag>& ListIterator<T, Tag>::operator++() noexcept {
+template <typename T>
+constexpr ListIterator<T>& ListIterator<T>::operator++() noexcept {
     current_ = current_->next_node();
     return *this;
 }
 
-template <typename T, typename Tag>
-constexpr ListIterator<T, Tag>& ListIterator<T, Tag>::operator--() noexcept {
+template <typename T>
+constexpr ListIterator<T>& ListIterator<T>::operator--() noexcept {
     current_ = current_->prev_node();
     return *this;
 }
 
-template <typename T, typename Tag>
-constexpr ListIterator<T, Tag> ListIterator<T, Tag>::operator++(int) noexcept {
+template <typename T>
+constexpr ListIterator<T> ListIterator<T>::operator++(int) noexcept {
     auto tmp = *this;
     ++(*this);
     return tmp;
 }
 
-template <typename T, typename Tag>
-constexpr ListIterator<T, Tag> ListIterator<T, Tag>::operator--(int) noexcept {
+template <typename T>
+constexpr ListIterator<T> ListIterator<T>::operator--(int) noexcept {
     auto tmp = *this;
     --(*this);
     return tmp;
 }
 
-template <typename T, typename Tag>
-constexpr bool ListIterator<T, Tag>::operator==(const ListIterator& other) const noexcept {
+template <typename T>
+constexpr bool ListIterator<T>::operator==(const ListIterator& other) const noexcept {
     return current_ == other.current_;
 }
 
-template <typename T, typename Tag>
-constexpr bool ListIterator<T, Tag>::operator!=(const ListIterator& other) const noexcept {
+template <typename T>
+constexpr bool ListIterator<T>::operator!=(const ListIterator& other) const noexcept {
     return current_ != other.current_;
 }
 
-template <typename T, typename Tag>
-ListIterator<T, Tag>::operator ListIterator<const value_type, Tag>() const noexcept {
-    return ListIterator<const value_type, Tag>{current_};
+template <typename T>
+ListIterator<T>::operator ListIterator<const value_type>() const noexcept {
+    return ListIterator<const value_type>{current_};
 }
 
-template <typename T, typename Tag>
-constexpr NodeBase* ListIterator<T, Tag>::base() const noexcept {
+template <typename T>
+constexpr NodeBase* ListIterator<T>::base() const noexcept {
     return current_;
 }
 

@@ -55,7 +55,6 @@ SET(NTRUSIVE_HEADERS
   include/ntrusive/iterator.hpp
   include/ntrusive/list.hpp
   include/ntrusive/node.hpp
-  include/ntrusive/policies.hpp
 )
 
 TARGET_SOURCES(

@@ -128,16 +128,16 @@ inline bool NodeBase::is_linked_base() const noexcept {
     return next_ != nullptr;
 }
 
-inline void init_sentinel(NodeBase* sentinel) noexcept {
+inline void NodeBase::init_sentinel(NodeBase* sentinel) noexcept {
     sentinel->prev_ = sentinel;
     sentinel->next_ = sentinel;
 }
 
-inline bool is_empty_sentinel(const NodeBase* sentinel) noexcept {
+inline bool NodeBase::is_empty_sentinel(const NodeBase* sentinel) noexcept {
     return sentinel->next_ == sentinel;
 }
 
-inline void transfer_range(NodeBase* pos, NodeBase* first, NodeBase* last) noexcept {
+inline void NodeBase::transfer_range(NodeBase* pos, NodeBase* first, NodeBase* last) noexcept {
     if (first == last) {
         return; /* Empty range */
     }

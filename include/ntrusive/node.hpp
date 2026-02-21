@@ -1,25 +1,24 @@
 #pragma once
 
 #include "base_node.hpp"
-#include "policies.hpp"
 #include <cassert>
-#include <concepts>
+#include <cstdio>
 
 /**
  * @brief Intrusive List Node.
  * Inherit from this class to make your object linkable.
  *
+ * >> SAFETY : Automatically unlinks on destruction.
+ *
+ * >> USAGE :
+ *  struct Task : IntrusiveListNode {
+ *    void whatever(...);
+ *  };
+ *
+ *
  */
-template <typename Tag = void,
-          LinkPolicy Policy = TrackingPolicy,
-          typename Handler = AutoUnlinkHandler>
 class IntrusiveListNode : public NodeBase {
   public:
-    using tag_type = Tag;
-    using policy_type = Policy;
-    using destruction_handler = Handler;
-    using state_type = typename Policy::State;
-
     constexpr IntrusiveListNode() noexcept = default;
 
     ~IntrusiveListNode();
@@ -35,7 +34,7 @@ class IntrusiveListNode : public NodeBase {
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
     /**
-     * @brief Checks if this node is currently in a list.
+     * @brief Is this node currently in a list?
      */
     [[nodiscard]]
     constexpr bool is_linked() const noexcept;
@@ -51,6 +50,7 @@ class IntrusiveListNode : public NodeBase {
      */
     constexpr void set_linked() noexcept;
 
+  private:
     /**
      * @brief Link this node this with two others
      */
@@ -59,51 +59,51 @@ class IntrusiveListNode : public NodeBase {
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
   private:
-    [[no_unique_address]]
-    state_type state_;
+    bool is_linked_{false};
 
-    template <typename, typename>
+    template <typename>
     friend class IntrusiveList;
 
-    template <typename, typename>
+    template <typename>
     friend class ListIterator;
 };
 
-/*---*---*---*---*---*---*---*---IMPL---*---*---*---*---*---*---*---*---*/
+/*---*---*---*---*---*---*---*---* IMPL *---*---*---*---*---*---*---*---*---*/
 
-template <typename Tag, LinkPolicy Policy, typename Handler>
-IntrusiveListNode<Tag, Policy, Handler>::~IntrusiveListNode() {
-    Handler::on_destroy(*this);
-}
+IntrusiveListNode::~IntrusiveListNode() {
+    /* Warn!!! */
+    if (is_linked_) {
+        #ifndef NDEBUG
+        fprintf(stderr,
+                        "[ntrusive] : WARNING : destroying node still in list.. auto-unlinking..\n");
+        #endif
 
-template <typename Tag, LinkPolicy Policy, typename Handler>
-constexpr bool IntrusiveListNode<Tag, Policy, Handler>::is_linked() const noexcept {
-    return Policy::is_linked(state_);
-}
-
-template <typename Tag, LinkPolicy Policy, typename Handler>
-void IntrusiveListNode<Tag, Policy, Handler>::unlink() noexcept {
-
-    if constexpr (std::same_as<Policy, TrackingPolicy>) {
-        assert(is_linked() && "Attempting to unlink element not in list!!");
+        unlink();
     }
+}
+
+constexpr bool IntrusiveListNode::is_linked() const noexcept {
+    return is_linked_;
+}
+
+void IntrusiveListNode::unlink() noexcept {
+
+    assert(is_linked_ && "attempting to unlink node not in a list...");
 
     /* ................... */
 
     unlink_base();
-    Policy::on_unlink(state_);
+    is_linked_ = false;
 
     /* ................... */
 }
 
-template <typename Tag, LinkPolicy Policy, typename Handler>
-constexpr void IntrusiveListNode<Tag, Policy, Handler>::set_linked() noexcept {
-    Policy::on_link(state_);
+constexpr void IntrusiveListNode::set_linked() noexcept {
+    is_linked_ = true;
 }
 
-template <typename Tag, LinkPolicy Policy, typename Handler>
-void IntrusiveListNode<Tag, Policy, Handler>::link_between(NodeBase* prev,
-                                                           NodeBase* next) noexcept {
+void IntrusiveListNode::link_between(NodeBase* prev,
+                                     NodeBase* next) noexcept {
 
     /* ................... */
 
