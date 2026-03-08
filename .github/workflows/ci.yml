@@ -1,0 +1,150 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+
+  pull_request:
+    branches: [master]
+
+  # Allow manual triggering of workflow
+  workflow_dispatch:
+
+env:
+  BUILD_DIR: build
+  BUILD_TYPE: Debug
+
+jobs:
+  build-and-test:
+    name: "${{matrix.name}}" # Dynamic job name from matrix
+    runs-on: "${{matrix.os}}" # OS to run on from matrix
+
+    strategy:
+      fail-fast: false # Don't stop all jobs if one fails
+      matrix:
+        include:
+          - name: "Linux + gcc"
+            os: ubuntu-24.04
+            compiler: gcc
+            cc: gcc-15
+            cxx: g++-15
+            install: "gcc-15 g++-15"
+
+          - name: "Linux + clang"
+            os: ubuntu-24.04
+            compiler: clang
+            cc: clang-22
+            cxx: clang++-22
+            install: "clang-22"
+
+          - name: "MacOs + AplleClang"
+            os: macos-latest
+            compiler: appleclang
+            cc: clang
+            cxx: clang++
+            install: ""
+
+    steps:
+      # Check out the repository code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install compiler
+      - name: Install compiler
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ${{matrix.install}}
+
+      # Configure the build with CMake
+      - name: Configure
+        env:
+          CC: ${{matrix.cc}}
+          CXX: ${{matrix.cxx}}
+        run: |
+          cmake -B ${{env.BUILD_DIR}} \
+             -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+
+      # Build the project
+      - name: Build
+        run: cmake --build ${{env.BUILD_DIR}} --parallel
+
+      # Run tests
+      - name: Test
+        run: |
+          ctest --test-dir ${{ env.BUILD_DIR}} \
+          --build-config ${{env.BUILD_TYPE}} \
+          --output-on-failure \
+          --timeout 60
+
+  # Job for running sanitizers
+  sanitizers:
+    name: "${{ matrix.name }}"
+    runs-on: ubuntu-24.04
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: "ASan"
+            cflags: "-fsanitize=address -fno-omit-frame-pointer"
+            sanitizer_env: "ASAN_OPTIONS=detect_leaks=1"
+
+          - name: "UBSan"
+            cflags: "-fsanitize=undefined -fno-omit-frame-pointer"
+            sanitizer_env: "UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1"
+
+          - name: "ASan + UBSan"
+            cflags: "-fsanitize=address,undefined -fno-omit-frame-pointer"
+            sanitizer_env: "ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Clang
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18
+
+      # Configure build with sanitizer flags
+      - name: Configure
+        env:
+          CC: clang-22
+          CXX: clang++-22
+        run: |
+          cmake -B ${{ env.BUILD_DIR }} \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DNTRUSIVE_BUILD_TESTS=ON \
+            -DCMAKE_CXX_FLAGS="${{ matrix.cflags }}" \
+            -DCMAKE_EXE_LINKER_FLAGS="${{ matrix.cflags }}"
+
+      - name: Build
+        run: cmake --build ${{ env.BUILD_DIR }} --parallel
+
+      # Run tests with sanitizer environment
+      - name: Test
+        env: ${{ matrix.sanitizer_env }}
+        run: |
+          ctest --test-dir ${{ env.BUILD_DIR }} \
+            --output-on-failure \
+            --timeout 120
+
+  # Job for checking code formatting
+  format:
+    name: "clang-format"
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format-22
+
+      # Check code formatting without making changes
+      - name: Check formatting
+        run: |
+          find include/ -name '*.hpp' | xargs clang-format-22 --dry-run --Werror
