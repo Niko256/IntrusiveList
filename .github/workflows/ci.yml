@@ -26,32 +26,43 @@ jobs:
           - name: "Linux + gcc"
             os: ubuntu-24.04
             compiler: gcc
-            cc: gcc-15
-            cxx: g++-15
-            install: "gcc-15 g++-15"
+            cc: gcc-14
+            cxx: g++-14
+            install: "gcc-14 g++-14"
+            setup_cmd: |
+              sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+              sudo apt-get update
 
           - name: "Linux + clang"
             os: ubuntu-24.04
             compiler: clang
-            cc: clang-22
-            cxx: clang++-22
-            install: "clang-22"
+            cc: clang-19
+            cxx: clang++-19
+            install: "clang-19"
+            setup_cmd: |
+              wget https://apt.llvm.org/llvm.sh
+              chmod +x llvm.sh
+              sudo ./llvm.sh 19
 
-          - name: "MacOs + AplleClang"
+          - name: "MacOs + AppleClang"
             os: macos-latest
             compiler: appleclang
             cc: clang
             cxx: clang++
             install: ""
+            setup_cmd: "echo 'Using system AppleClang'"
 
     steps:
-      # Check out the repository code
+      # Check out the repository
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Install compiler
-      - name: Install compiler
+      - name: Setup compiler repositories
         if: runner.os == 'Linux'
+        run: ${{ matrix.setup_cmd }}
+
+      - name: Install compiler
+        if: runner.os == 'Linux' && matrix.install != ''
         run: |
           sudo apt-get update
           sudo apt-get install -y ${{matrix.install}}
@@ -102,16 +113,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install Clang
+      - name: Install Clang 19
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-18
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19
+          sudo apt-get install -y clang-19
 
       # Configure build with sanitizer flags
       - name: Configure
         env:
-          CC: clang-22
-          CXX: clang++-22
+          CC: clang-19
+          CXX: clang++-19
         run: |
           cmake -B ${{ env.BUILD_DIR }} \
             -DCMAKE_BUILD_TYPE=Debug \
@@ -124,7 +138,9 @@ jobs:
 
       # Run tests with sanitizer environment
       - name: Test
-        env: ${{ matrix.sanitizer_env }}
+        env:
+          ASAN_OPTIONS: ${{ contains(matrix.sanitizer_env, 'ASAN_OPTIONS') && 'detect_leaks=1' || '' }}
+          UBSAN_OPTIONS: ${{ contains(matrix.sanitizer_env, 'UBSAN_OPTIONS') && 'print_stacktrace=1:halt_on_error=1' || '' }}
         run: |
           ctest --test-dir ${{ env.BUILD_DIR }} \
             --output-on-failure \
@@ -139,12 +155,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install clang-format
+      - name: Install clang-format 19
         run: |
           sudo apt-get update
-          sudo apt-get install -y clang-format-22
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 19
+          sudo apt-get install -y clang-format-19
 
       # Check code formatting without making changes
       - name: Check formatting
         run: |
-          find include/ -name '*.hpp' | xargs clang-format-22 --dry-run --Werror
+          # Check if include directory exists
+          if [ -d "include" ]; then
+            find include/ -name '*.hpp' -o -name '*.h' | xargs clang-format-19 --dry-run --Werror
+          else
+            echo "No include directory found, skipping format check"
+            exit 0
+          fi
