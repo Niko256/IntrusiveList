@@ -1,7 +1,6 @@
 #pragma once
 
 struct NodeBase {
-
     /*---*---*---*---*---*---*/
 
     NodeBase* prev_{nullptr};

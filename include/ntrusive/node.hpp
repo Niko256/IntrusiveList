@@ -73,10 +73,13 @@ class IntrusiveListNode : public NodeBase {
 IntrusiveListNode::~IntrusiveListNode() {
     /* Warn!!! */
     if (is_linked_) {
-        #ifndef NDEBUG
-        fprintf(stderr,
-                        "[ntrusive] : WARNING : destroying node still in list.. auto-unlinking..\n");
-        #endif
+#ifndef NDEBUG
+        fprintf(
+            stderr,
+            "[ntrusive] : WARNING : destroying node still in list.. "
+            "auto-unlinking..\n"
+        );
+#endif
 
         unlink();
     }
@@ -87,7 +90,6 @@ constexpr bool IntrusiveListNode::is_linked() const noexcept {
 }
 
 void IntrusiveListNode::unlink() noexcept {
-
     assert(is_linked_ && "attempting to unlink node not in a list...");
 
     /* ................... */
@@ -102,9 +104,7 @@ constexpr void IntrusiveListNode::set_linked() noexcept {
     is_linked_ = true;
 }
 
-void IntrusiveListNode::link_between(NodeBase* prev,
-                                     NodeBase* next) noexcept {
-
+void IntrusiveListNode::link_between(NodeBase* prev, NodeBase* next) noexcept {
     /* ................... */
 
     link_between_base(prev, next);

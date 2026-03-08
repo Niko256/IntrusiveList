@@ -12,8 +12,9 @@
  *
  * @section PHILOSOPHY
  * Unlike standart containers (like std::list), an Intrusive List doesn't manage
- * memory lifetimes of objects it stores. Instead, the linkage metadata (like 'prev' and 'next' fields)
- * are embedded directly within the stored object itself.
+ * memory lifetimes of objects it stores. Instead, the linkage metadata (like
+ * 'prev' and 'next' fields) are embedded directly within the stored object
+ * itself.
  *
  * This approach has significant advantages:
  *  >> Zero Allocations on push/pop operations
@@ -32,8 +33,7 @@ concept DerivedFromNode = std::is_base_of_v<IntrusiveListNode, T>;
 template <typename T>
 class IntrusiveList {
   public:
-    static_assert(DerivedFromNode<T>,
-                  "T must inherit from IntrusiveListNode<...>");
+    static_assert(DerivedFromNode<T>, "T must inherit from IntrusiveListNode<...>");
 
     using value_type = T;
     using pointer = T*;
@@ -96,7 +96,8 @@ class IntrusiveList {
     void splice_cell(const_iterator pos, IntrusiveList& other, const_iterator element) noexcept;
 
     /**
-     * @brief Transfer range of elements [first, last) from other to this list, inserting before specific position
+     * @brief Transfer range of elements [first, last) from other to this list,
+     * inserting before specific position
      */
     void splice_range(const_iterator pos, IntrusiveList& other, const_iterator first, const_iterator last) noexcept;
 
@@ -111,7 +112,8 @@ class IntrusiveList {
 
     /**
      * @brief Self removal of an element from ANY list.
-     * This method enables objects to remove themselves without needing a ref to their containing list.
+     * This method enables objects to remove themselves without needing a ref to
+     * their containing list.
      *
      * @param Reference to the element to remove.
      */
@@ -172,7 +174,8 @@ IntrusiveList<T>::IntrusiveList() noexcept {
 template <typename T>
 IntrusiveList<T>::~IntrusiveList() {
     /**
-     * assert(empty() && "Destroying non-empty IntrusiveList. Unlink elements first!!");
+     * assert(empty() && "Destroying non-empty IntrusiveList.
+     * Unlink elements first!!");
      */
     clear();
 }
@@ -274,8 +277,7 @@ void IntrusiveList<T>::insert_after(NodeBase* after, reference value) noexcept {
 }
 
 template <typename T>
-void IntrusiveList<T>::insert_before(NodeBase* before,
-                                     reference value) noexcept {
+void IntrusiveList<T>::insert_before(NodeBase* before, reference value) noexcept {
     auto& node = value;
 
     assert(!node.is_linked() && "Element already in a list!!");
@@ -307,8 +309,7 @@ void IntrusiveList<T>::push_front(reference element) noexcept {
 }
 
 template <typename T>
-auto IntrusiveList<T>::insert(
-    const_iterator pos, reference element) noexcept -> iterator {
+auto IntrusiveList<T>::insert(const_iterator pos, reference element) noexcept -> iterator {
     /**
      * insert before pos (because inserted node position will become new pos)
      */
@@ -351,9 +352,7 @@ auto IntrusiveList<T>::erase(const_iterator pos) noexcept -> iterator {
 }
 
 template <typename T>
-auto IntrusiveList<T>::erase_range(const_iterator first,
-                                   const_iterator last) noexcept -> iterator {
-
+auto IntrusiveList<T>::erase_range(const_iterator first, const_iterator last) noexcept -> iterator {
     auto it = iterator(first.base());
     auto stop = last.base();
 
@@ -375,8 +374,7 @@ void IntrusiveList<T>::clear() noexcept {
 }
 
 template <typename T>
-auto IntrusiveList<T>::extract_front(IntrusiveList& out,
-                                     size_type max_cnt) noexcept -> size_type {
+auto IntrusiveList<T>::extract_front(IntrusiveList& out, size_type max_cnt) noexcept -> size_type {
     /*
      * Extract up max_cnt elements from the front to the end of outer list
      */
@@ -405,7 +403,8 @@ void IntrusiveList<T>::remove(reference element) noexcept {
      * [T must inherit from IntrusiveListNode<>]
      *
      * Magic : this conversion unlocks self-removal because
-     * any T can access its embedded list node without knowing specific list containing it.
+     * any T can access its embedded list node without knowing specific list
+     * containing it.
      * => IntrusiveList<Task>::remove(*this);
      */
     node_type& node = element;
@@ -417,12 +416,15 @@ void IntrusiveList<T>::remove(reference element) noexcept {
 
 template <typename T>
 void IntrusiveList<T>::splice_range(
-    const_iterator position, IntrusiveList& other,
-    const_iterator first, const_iterator last) noexcept {
-
+    const_iterator position,
+    IntrusiveList& other,
+    const_iterator first,
+    const_iterator last
+) noexcept {
     /*
      * Before :
-     *    other list : ... <-> before <-> [first <-> ... <-> last] <-> after <-> ...
+     *    other list : ... <-> before <-> [first <-> ... <-> last] <-> after <->
+     * ...
      *
      *    this list : ... <-> before' <-> position <-> after' <-> ...
      *
@@ -436,8 +438,7 @@ void IntrusiveList<T>::splice_range(
 }
 
 template <typename T>
-void IntrusiveList<T>::splice(const_iterator position,
-                              IntrusiveList& other) noexcept {
+void IntrusiveList<T>::splice(const_iterator position, IntrusiveList& other) noexcept {
     if (other.empty()) {
         return;
     }
@@ -450,10 +451,7 @@ void IntrusiveList<T>::splice(const_iterator position,
 }
 
 template <typename T>
-void IntrusiveList<T>::splice_cell(const_iterator position,
-                                   IntrusiveList& other,
-                                   const_iterator element) noexcept {
-
+void IntrusiveList<T>::splice_cell(const_iterator position, IntrusiveList& other, const_iterator element) noexcept {
     if (element == other.end()) {
         return;
     }

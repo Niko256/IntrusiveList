@@ -64,9 +64,7 @@ constexpr ListIterator<T>::ListIterator(NodeBase* hook) noexcept
     : current_(hook) {}
 
 template <typename T>
-constexpr typename ListIterator<T>::reference
-ListIterator<T>::operator*() const noexcept {
-
+constexpr typename ListIterator<T>::reference ListIterator<T>::operator*() const noexcept {
     /**
      *
      * NodeBase* --> node_type* --> T*
@@ -77,8 +75,7 @@ ListIterator<T>::operator*() const noexcept {
 }
 
 template <typename T>
-constexpr typename ListIterator<T>::pointer
-ListIterator<T>::operator->() const noexcept {
+constexpr typename ListIterator<T>::pointer ListIterator<T>::operator->() const noexcept {
     return static_cast<pointer>(static_cast<node_type*>(current_));
 }
 
