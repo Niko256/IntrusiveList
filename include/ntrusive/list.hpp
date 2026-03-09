@@ -32,6 +32,13 @@ concept DerivedFromNode = std::is_base_of_v<IntrusiveListNode, T>;
 
 template <typename T>
 class IntrusiveList {
+  private:
+    /*---*---*---*---*---*---*/
+
+    NodeBase sentinel_;
+
+    /*---*---*---*---*---*---*/
+
   public:
     static_assert(DerivedFromNode<T>, "T must inherit from IntrusiveListNode<...>");
 
@@ -157,14 +164,9 @@ class IntrusiveList {
 
     [[nodiscard]]
     auto cend() const noexcept -> const_iterator;
-
-    /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
-
-  private:
-    NodeBase sentinel_;
 };
 
-/*---*---*---*---*---*---*---*---* IMPL *---*---*---*---*---*---*---*---*---*/
+/*---*---*---*---*---*---*---*---* IMPL *---*---*---*---*---*---*---*---*/
 
 template <typename T>
 IntrusiveList<T>::IntrusiveList() noexcept {

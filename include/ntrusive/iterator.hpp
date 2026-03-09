@@ -11,9 +11,14 @@
  */
 template <typename T>
 class ListIterator {
-  public:
-    /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
+  private:
+    /*---*---*---*---*---*---*---*/
 
+    NodeBase* current_{nullptr};
+
+    /*---*---*---*---*---*---*---*/
+
+  public:
     using iterator_category = std::bidirectional_iterator_tag;
     using iterator_concept = std::bidirectional_iterator_tag;
 
@@ -58,15 +63,12 @@ class ListIterator {
         : current_(other.base()) {}
 
     [[nodiscard]] constexpr auto base() const noexcept -> NodeBase*;
-
-  private:
-    NodeBase* current_{nullptr};
 };
 
 template <typename T>
 using ConstListIterator = ListIterator<const T>;
 
-/*---*---*---*---*---*---*---*---IMPL---*---*---*---*---*---*---*---*---*/
+/*---*---*---*---*---*---*---*---* IMPL *---*---*---*---*---*---*---*---*/
 
 template <typename T>
 constexpr auto ListIterator<T>::operator*() const noexcept -> reference {

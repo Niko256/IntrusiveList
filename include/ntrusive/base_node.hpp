@@ -83,7 +83,7 @@ struct NodeBase {
     static void transfer_range(NodeBase* pos, NodeBase* first, NodeBase* last) noexcept;
 };
 
-/*---*---*---*---*---*---*---*---IMPL---*---*---*---*---*---*---*---*---*/
+/*---*---*---*---*---*---*---*---* IMPL *---*---*---*---*---*---*---*---*/
 
 inline auto NodeBase::next_node() noexcept -> NodeBase* {
     ///

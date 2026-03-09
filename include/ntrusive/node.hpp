@@ -18,6 +18,13 @@
  *
  */
 class IntrusiveListNode : public NodeBase {
+  private:
+    /*---*---*---*---*---*---*---*/
+
+    bool is_linked_{false};
+
+    /*---*---*---*---*---*---*---*/
+
   public:
     constexpr IntrusiveListNode() noexcept = default;
 
@@ -58,9 +65,6 @@ class IntrusiveListNode : public NodeBase {
 
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
-  private:
-    bool is_linked_{false};
-
     template <typename>
     friend class IntrusiveList;
 
@@ -68,7 +72,7 @@ class IntrusiveListNode : public NodeBase {
     friend class ListIterator;
 };
 
-/*---*---*---*---*---*---*---*---* IMPL *---*---*---*---*---*---*---*---*---*/
+/*---*---*---*---*---*---*---*---* IMPL *---*---*---*---*---*---*---*---*/
 
 IntrusiveListNode::~IntrusiveListNode() {
     /* Warn!!! */
