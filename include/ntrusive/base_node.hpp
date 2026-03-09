@@ -86,27 +86,39 @@ struct NodeBase {
 /*---*---*---*---*---*---*---*---IMPL---*---*---*---*---*---*---*---*---*/
 
 inline auto NodeBase::next_node() noexcept -> NodeBase* {
+    ///
     return next_;
+    ///
 }
 
 inline auto NodeBase::next_node() const noexcept -> const NodeBase* {
+    ///
     return next_;
+    ///
 }
 
 inline auto NodeBase::prev_node() noexcept -> NodeBase* {
+    ///
     return prev_;
+    ///
 }
 
 inline auto NodeBase::prev_node() const noexcept -> const NodeBase* {
+    ///
     return prev_;
+    ///
 }
 
 inline void NodeBase::set_next(NodeBase* n) noexcept {
+    ///
     next_ = n;
+    ///
 }
 
 inline void NodeBase::set_prev(NodeBase* p) noexcept {
+    ///
     prev_ = p;
+    ///
 }
 
 inline void NodeBase::link_between_base(NodeBase* prev, NodeBase* next) noexcept {
@@ -124,16 +136,22 @@ inline void NodeBase::unlink_base() noexcept {
 }
 
 inline auto NodeBase::is_linked_base() const noexcept -> bool {
+    ///
     return next_ != nullptr;
+    ///
 }
 
 inline void NodeBase::init_sentinel(NodeBase* sentinel) noexcept {
+    ///
     sentinel->prev_ = sentinel;
     sentinel->next_ = sentinel;
+    ///
 }
 
 inline auto NodeBase::is_empty_sentinel(const NodeBase* sentinel) noexcept -> bool {
+    ///
     return sentinel->next_ == sentinel;
+    ///
 }
 
 inline void NodeBase::transfer_range(NodeBase* pos, NodeBase* first, NodeBase* last) noexcept {

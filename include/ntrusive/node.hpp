@@ -2,7 +2,7 @@
 
 #include "base_node.hpp"
 #include <cassert>
-#include <print>
+#include <cstdio>
 
 /**
  * @brief Intrusive List Node.
@@ -74,7 +74,7 @@ IntrusiveListNode::~IntrusiveListNode() {
     /* Warn!!! */
     if (is_linked_) {
 #ifndef NDEBUG
-        std::println(
+        std::fprintf(
             stderr,
             "[ntrusive] : WARNING : destroying node still in list.. "
             "auto-unlinking.."

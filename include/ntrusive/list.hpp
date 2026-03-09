@@ -209,14 +209,18 @@ auto IntrusiveList<T>::size() const noexcept -> size_type {
 
 template <typename T>
 auto IntrusiveList<T>::front() noexcept -> reference {
+    ///
     assert(!empty() && "front() called on empty list...");
     return *begin();
+    ///
 }
 
 template <typename T>
 auto IntrusiveList<T>::front() const noexcept -> const_reference {
+    ///
     assert(!empty() && "front() called on empty list...");
     return *cbegin();
+    ///
 }
 
 template <typename T>
@@ -230,8 +234,10 @@ auto IntrusiveList<T>::back() noexcept -> reference {
 
 template <typename T>
 auto IntrusiveList<T>::back() const noexcept -> const_reference {
+    ///
     assert(!empty() && "back() called on empty list...");
     return *(--cend());
+    ///
 }
 
 template <typename T>
@@ -245,7 +251,9 @@ auto IntrusiveList<T>::begin() noexcept -> iterator {
 
 template <typename T>
 auto IntrusiveList<T>::cbegin() const noexcept -> const_iterator {
+    ///
     return const_iterator(const_cast<NodeBase*>(sentinel_.next_node()));
+    ///
 }
 
 template <typename T>
@@ -258,7 +266,9 @@ auto IntrusiveList<T>::end() noexcept -> iterator {
 
 template <typename T>
 auto IntrusiveList<T>::cend() const noexcept -> const_iterator {
+    ///
     return const_iterator(const_cast<NodeBase*>(&sentinel_));
+    ///
 }
 
 /*---*---*---*---*---*---*---* Modifiers *---*---*---*---*---*---*---*/
