@@ -2,7 +2,7 @@
 
 #include "base_node.hpp"
 #include <cassert>
-#include <cstdio>
+#include <print>
 
 /**
  * @brief Intrusive List Node.
@@ -25,11 +25,11 @@ class IntrusiveListNode : public NodeBase {
 
     /* non-copyable */
     IntrusiveListNode(const IntrusiveListNode&) = delete;
-    IntrusiveListNode& operator=(const IntrusiveListNode&) = delete;
+    auto operator=(const IntrusiveListNode&) -> IntrusiveListNode& = delete;
 
     /* non-moveble */
     IntrusiveListNode(IntrusiveListNode&&) noexcept = delete;
-    IntrusiveListNode& operator=(IntrusiveListNode&&) noexcept = delete;
+    auto operator=(IntrusiveListNode&&) noexcept -> IntrusiveListNode& = delete;
 
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
@@ -37,7 +37,7 @@ class IntrusiveListNode : public NodeBase {
      * @brief Is this node currently in a list?
      */
     [[nodiscard]]
-    constexpr bool is_linked() const noexcept;
+    constexpr auto is_linked() const noexcept -> bool;
 
     /**
      * @brief Removes this node from its current list.
@@ -74,10 +74,10 @@ IntrusiveListNode::~IntrusiveListNode() {
     /* Warn!!! */
     if (is_linked_) {
 #ifndef NDEBUG
-        fprintf(
+        std::println(
             stderr,
             "[ntrusive] : WARNING : destroying node still in list.. "
-            "auto-unlinking..\n"
+            "auto-unlinking.."
         );
 #endif
 
@@ -85,7 +85,7 @@ IntrusiveListNode::~IntrusiveListNode() {
     }
 }
 
-constexpr bool IntrusiveListNode::is_linked() const noexcept {
+constexpr auto IntrusiveListNode::is_linked() const noexcept -> bool {
     return is_linked_;
 }
 

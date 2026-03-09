@@ -9,16 +9,16 @@ struct NodeBase {
     /*---*---*---*---*---*---*/
 
     [[nodiscard]]
-    NodeBase* next_node() noexcept;
+    auto next_node() noexcept -> NodeBase*;
 
     [[nodiscard]]
-    const NodeBase* next_node() const noexcept;
+    auto next_node() const noexcept -> const NodeBase*;
 
     [[nodiscard]]
-    NodeBase* prev_node() noexcept;
+    auto prev_node() noexcept -> NodeBase*;
 
     [[nodiscard]]
-    const NodeBase* prev_node() const noexcept;
+    auto prev_node() const noexcept -> const NodeBase*;
 
     void set_next(NodeBase* n) noexcept;
     void set_prev(NodeBase* p) noexcept;
@@ -48,7 +48,7 @@ struct NodeBase {
      * IntrusiveListNode with TrackingPolicy.
      */
     [[nodiscard]]
-    bool is_linked_base() const noexcept;
+    auto is_linked_base() const noexcept -> bool;
 
     /**
      * @brief Initializes a node as an empty list sentinel.
@@ -62,7 +62,7 @@ struct NodeBase {
      * @brief Checks if sentinel represents an empty list.
      */
     [[nodiscard]]
-    bool is_empty_sentinel(const NodeBase* sentinel) noexcept;
+    auto is_empty_sentinel(const NodeBase* sentinel) noexcept -> bool;
 
     /**
      * @brief Transfers range [first, last) before pos.
@@ -85,19 +85,19 @@ struct NodeBase {
 
 /*---*---*---*---*---*---*---*---IMPL---*---*---*---*---*---*---*---*---*/
 
-inline NodeBase* NodeBase::next_node() noexcept {
+inline auto NodeBase::next_node() noexcept -> NodeBase* {
     return next_;
 }
 
-inline const NodeBase* NodeBase::next_node() const noexcept {
+inline auto NodeBase::next_node() const noexcept -> const NodeBase* {
     return next_;
 }
 
-inline NodeBase* NodeBase::prev_node() noexcept {
+inline auto NodeBase::prev_node() noexcept -> NodeBase* {
     return prev_;
 }
 
-inline const NodeBase* NodeBase::prev_node() const noexcept {
+inline auto NodeBase::prev_node() const noexcept -> const NodeBase* {
     return prev_;
 }
 
@@ -123,7 +123,7 @@ inline void NodeBase::unlink_base() noexcept {
     next_ = nullptr;
 }
 
-inline bool NodeBase::is_linked_base() const noexcept {
+inline auto NodeBase::is_linked_base() const noexcept -> bool {
     return next_ != nullptr;
 }
 
@@ -132,7 +132,7 @@ inline void NodeBase::init_sentinel(NodeBase* sentinel) noexcept {
     sentinel->next_ = sentinel;
 }
 
-inline bool NodeBase::is_empty_sentinel(const NodeBase* sentinel) noexcept {
+inline auto NodeBase::is_empty_sentinel(const NodeBase* sentinel) noexcept -> bool {
     return sentinel->next_ == sentinel;
 }
 

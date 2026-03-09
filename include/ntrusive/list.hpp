@@ -57,10 +57,10 @@ class IntrusiveList {
     ~IntrusiveList();
 
     IntrusiveList(const IntrusiveList&) = delete;
-    IntrusiveList& operator=(const IntrusiveList&) = delete;
+    auto operator=(const IntrusiveList&) -> IntrusiveList& = delete;
 
     IntrusiveList(IntrusiveList&&) noexcept = delete;
-    IntrusiveList& operator=(IntrusiveList&&) noexcept = delete;
+    auto operator=(IntrusiveList&&) noexcept -> IntrusiveList& = delete;
 
   private:
     void init_sentinel() noexcept;
@@ -127,7 +127,7 @@ class IntrusiveList {
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
   public:
-    [[nodiscard]] bool empty() const noexcept;
+    [[nodiscard]] auto empty() const noexcept -> bool;
 
     [[nodiscard]]
     auto size() const noexcept -> size_type;
@@ -189,7 +189,7 @@ void IntrusiveList<T>::init_sentinel() noexcept {
 /*---*---*---*---*---*---*---* Capacity *---*---*---*---*---*---*---*/
 
 template <typename T>
-bool IntrusiveList<T>::empty() const noexcept {
+auto IntrusiveList<T>::empty() const noexcept -> bool {
     return sentinel_.next_node() == &sentinel_;
 }
 
@@ -439,11 +439,7 @@ void IntrusiveList<T>::splice_range(
 
 template <typename T>
 void IntrusiveList<T>::splice(const_iterator position, IntrusiveList& other) noexcept {
-    if (other.empty()) {
-        return;
-    }
-
-    if (this == &other) {
+    if (other.empty() || this == &other) {
         return;
     }
 
