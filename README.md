@@ -40,7 +40,7 @@ There are many unnecessary allocations occurring here.
 
 With this library, the callable entity (your fiber, coroutine, future, etc.) doesn't need to store a closure. Instead, the intrusive list node itself stores all necessary state and is responsible for its own linkage.
 
-The state is allocated exactly once when the object is constructed (a single heap allocation). The linkage metadata is embedded directly within the object (since the object inherits from the list node). When a task yields, you simply pass a pointer to the existing object back to the executor.
+The state is allocated exactly once when the object is constructed (a single heap allocation). [The linkage metadata is embedded directly within the object](https://github.com/t1mn0/white-rabbit/blob/main/docs/media/intrusiveness.png) (since the object inherits from the list node). When a task yields, you simply pass a pointer to the existing object back to the executor.
 
 This results in zero allocations during runtime operations.
 
