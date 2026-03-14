@@ -80,7 +80,7 @@ class IntrusiveListNode : public NodeBase {
 
 /*---*---*---*---*---*---*---*---* IMPL *---*---*---*---*---*---*---*---*/
 
-IntrusiveListNode::~IntrusiveListNode() {
+inline IntrusiveListNode::~IntrusiveListNode() {
     /* Warn!!! */
     if (is_linked_) {
 #ifndef NDEBUG
@@ -95,13 +95,13 @@ IntrusiveListNode::~IntrusiveListNode() {
     }
 }
 
-IntrusiveListNode::IntrusiveListNode(IntrusiveListNode&& other) noexcept
+inline IntrusiveListNode::IntrusiveListNode(IntrusiveListNode&& other) noexcept
     : NodeBase(std::move(other)),
       is_linked_(false) {
     assert(!other.is_linked_ and "moving linked intrusive node is forbidden!");
 }
 
-IntrusiveListNode& IntrusiveListNode::operator=(IntrusiveListNode&& other) noexcept {
+inline IntrusiveListNode& IntrusiveListNode::operator=(IntrusiveListNode&& other) noexcept {
     assert(!is_linked_ and "move-assign into linked intrusive node is forbidden!");
     assert(!other.is_linked_ and "moving linked intrusive node is forbidden!");
 
@@ -111,13 +111,13 @@ IntrusiveListNode& IntrusiveListNode::operator=(IntrusiveListNode&& other) noexc
     return *this;
 }
 
-constexpr auto IntrusiveListNode::is_linked() const noexcept -> bool {
+inline constexpr auto IntrusiveListNode::is_linked() const noexcept -> bool {
     ///
     return is_linked_;
     ///
 }
 
-void IntrusiveListNode::unlink() noexcept {
+inline void IntrusiveListNode::unlink() noexcept {
     assert(is_linked_ && "attempting to unlink node not in a list...");
 
     /* ................... */
@@ -128,13 +128,13 @@ void IntrusiveListNode::unlink() noexcept {
     /* ................... */
 }
 
-constexpr void IntrusiveListNode::set_linked() noexcept {
+inline constexpr void IntrusiveListNode::set_linked() noexcept {
     ///
     is_linked_ = true;
     ///
 }
 
-void IntrusiveListNode::link_between(NodeBase* prev, NodeBase* next) noexcept {
+inline void IntrusiveListNode::link_between(NodeBase* prev, NodeBase* next) noexcept {
     /* ................... */
 
     link_between_base(prev, next);
