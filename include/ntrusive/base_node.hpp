@@ -129,11 +129,11 @@ inline void NodeBase::set_prev(NodeBase* p) noexcept {
     ///
 }
 
-NodeBase::NodeBase(NodeBase&& other) noexcept
+NodeBase::NodeBase(NodeBase&&) noexcept
     : prev_(nullptr),
       next_(nullptr) {}
 
-NodeBase& NodeBase::operator=(NodeBase&& other) noexcept {
+NodeBase& NodeBase::operator=(NodeBase&&) noexcept {
     prev_ = nullptr;
     next_ = nullptr;
 

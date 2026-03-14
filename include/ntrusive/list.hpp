@@ -16,10 +16,6 @@
  * 'prev' and 'next' fields) are embedded directly within the stored object
  * itself.
  *
- * This approach has significant advantages:
- *  >> Zero Allocations on push/pop operations
- *  >> Memory Locality
- *
  */
 
 /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
