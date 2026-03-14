@@ -8,6 +8,8 @@ struct NodeBase {
 
     /*---*---*---*---*---*---*/
 
+    NodeBase() noexcept = default;
+
     NodeBase(NodeBase&& other) noexcept;
     NodeBase& operator=(NodeBase&& other) noexcept;
 
