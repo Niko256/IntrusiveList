@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base_node.hpp"
+#include <algorithm>
 #include <cassert>
 #include <cstdio>
 
@@ -33,6 +34,15 @@ class IntrusiveListNode : public NodeBase {
     /* non-copyable */
     IntrusiveListNode(const IntrusiveListNode&) = delete;
     auto operator=(const IntrusiveListNode&) -> IntrusiveListNode& = delete;
+
+    /* move is only valid for detached nodes.
+     *
+     * [rationale] :
+     *  >> linked nodes are address-sensative and therefore must not be moved.
+     *  >> tasks in runtime must be remain movable before materialization
+     */
+    IntrusiveListNode(IntrusiveListNode&& other) noexcept;
+    IntrusiveListNode& operator=(IntrusiveListNode&& other) noexcept;
 
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
@@ -83,6 +93,22 @@ IntrusiveListNode::~IntrusiveListNode() {
 
         unlink();
     }
+}
+
+IntrusiveListNode::IntrusiveListNode(IntrusiveListNode&& other) noexcept
+    : NodeBase(std::move(other)),
+      is_linked_(false) {
+    assert(!other.is_linked_ and "moving linked intrusive node is forbidden!");
+}
+
+IntrusiveListNode& IntrusiveListNode::operator=(IntrusiveListNode&& other) noexcept {
+    assert(!is_linked_ and "move-assign into linked intrusive node is forbidden!");
+    assert(!other.is_linked_ and "moving linked intrusive node is forbidden!");
+
+    NodeBase::operator=(std::move(other));
+    is_linked_ = false;
+
+    return *this;
 }
 
 constexpr auto IntrusiveListNode::is_linked() const noexcept -> bool {

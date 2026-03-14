@@ -8,6 +8,12 @@ struct NodeBase {
 
     /*---*---*---*---*---*---*/
 
+    NodeBase(NodeBase&& other) noexcept;
+    NodeBase& operator=(NodeBase&& other) noexcept;
+
+    NodeBase(const NodeBase&) = delete;
+    NodeBase& operator=(const NodeBase&) = delete;
+
     [[nodiscard]]
     auto next_node() noexcept -> NodeBase*;
 
@@ -119,6 +125,17 @@ inline void NodeBase::set_prev(NodeBase* p) noexcept {
     ///
     prev_ = p;
     ///
+}
+
+NodeBase::NodeBase(NodeBase&& other) noexcept
+    : prev_(nullptr),
+      next_(nullptr) {}
+
+NodeBase& NodeBase::operator=(NodeBase&& other) noexcept {
+    prev_ = nullptr;
+    next_ = nullptr;
+
+    return *this;
 }
 
 inline void NodeBase::link_between_base(NodeBase* prev, NodeBase* next) noexcept {
