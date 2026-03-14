@@ -170,7 +170,9 @@ class IntrusiveList {
 
 template <typename T>
 IntrusiveList<T>::IntrusiveList() noexcept {
+    ///
     init_sentinel();
+    ///
 }
 
 template <typename T>
@@ -184,15 +186,19 @@ IntrusiveList<T>::~IntrusiveList() {
 
 template <typename T>
 void IntrusiveList<T>::init_sentinel() noexcept {
+    ///
     sentinel_.set_next(&sentinel_);
     sentinel_.set_prev(&sentinel_);
+    ///
 }
 
 /*---*---*---*---*---*---*---* Capacity *---*---*---*---*---*---*---*/
 
 template <typename T>
 auto IntrusiveList<T>::empty() const noexcept -> bool {
+    ///
     return sentinel_.next_node() == &sentinel_;
+    ///
 }
 
 /* O(n) */

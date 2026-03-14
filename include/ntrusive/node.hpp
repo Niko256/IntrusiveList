@@ -34,10 +34,6 @@ class IntrusiveListNode : public NodeBase {
     IntrusiveListNode(const IntrusiveListNode&) = delete;
     auto operator=(const IntrusiveListNode&) -> IntrusiveListNode& = delete;
 
-    /* non-moveble */
-    IntrusiveListNode(IntrusiveListNode&&) noexcept = delete;
-    auto operator=(IntrusiveListNode&&) noexcept -> IntrusiveListNode& = delete;
-
     /*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*---*/
 
     /**
@@ -90,7 +86,9 @@ IntrusiveListNode::~IntrusiveListNode() {
 }
 
 constexpr auto IntrusiveListNode::is_linked() const noexcept -> bool {
+    ///
     return is_linked_;
+    ///
 }
 
 void IntrusiveListNode::unlink() noexcept {
@@ -105,7 +103,9 @@ void IntrusiveListNode::unlink() noexcept {
 }
 
 constexpr void IntrusiveListNode::set_linked() noexcept {
+    ///
     is_linked_ = true;
+    ///
 }
 
 void IntrusiveListNode::link_between(NodeBase* prev, NodeBase* next) noexcept {
