@@ -28,7 +28,16 @@ struct NodeBase {
     [[nodiscard]]
     auto prev_node() const noexcept -> const NodeBase*;
 
+    /**
+     * @brief Sets the next node pointer.
+     *
+     */
     void set_next(NodeBase* n) noexcept;
+
+    /**
+     * @brief Sets the previous node pointer.
+     *
+     */
     void set_prev(NodeBase* p) noexcept;
 
     /**

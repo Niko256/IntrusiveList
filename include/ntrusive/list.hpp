@@ -62,8 +62,8 @@ class IntrusiveList {
     IntrusiveList(const IntrusiveList&) = delete;
     auto operator=(const IntrusiveList&) -> IntrusiveList& = delete;
 
-    IntrusiveList(IntrusiveList&&) noexcept = delete;
-    auto operator=(IntrusiveList&&) noexcept -> IntrusiveList& = delete;
+    IntrusiveList(IntrusiveList&&) noexcept;
+    IntrusiveList& operator=(IntrusiveList&&) noexcept;
 
   private:
     void init_sentinel() noexcept;
@@ -178,6 +178,39 @@ IntrusiveList<T>::~IntrusiveList() {
      * Unlink elements first!!");
      */
     clear();
+}
+
+template <typename T>
+IntrusiveList<T>::IntrusiveList(IntrusiveList&& other) noexcept {
+    if (other.empty()) {
+        init_sentinel();
+    } else {
+        sentinel_.set_next(other.sentinel_.next_node());
+        sentinel_.set_prev(other.sentinel_.prev_node());
+
+        sentinel_.next_node()->set_prev(&sentinel_);
+        sentinel_.prev_node()->set_next(&sentinel_);
+
+        other.init_sentinel();
+    }
+}
+
+template <typename T>
+auto IntrusiveList<T>::operator=(IntrusiveList&& other) noexcept -> IntrusiveList<T>& {
+    if (this != &other) {
+        clear();
+
+        if (!other.empty()) {
+            sentinel_.set_next(other.sentinel_.next_node());
+            sentinel_.set_prev(other.sentinel_.prev_node());
+
+            sentinel_.next_node()->set_prev(&sentinel_);
+            sentinel_.prev_node()->set_next(&sentinel_);
+
+            other.init_sentinel();
+        }
+    }
+    return *this;
 }
 
 template <typename T>
@@ -382,7 +415,7 @@ void IntrusiveList<T>::clear() noexcept {
     /*
      * remove all elements one by one
      */
-    while (!empty()) {
+    while (not empty()) {
         pop_front();
     }
 }
@@ -431,7 +464,7 @@ void IntrusiveList<T>::remove(reference element) noexcept {
 template <typename T>
 void IntrusiveList<T>::splice_range(
     const_iterator position,
-    IntrusiveList& other,
+    [[maybe_unused]] IntrusiveList& other,
     const_iterator first,
     const_iterator last
 ) noexcept {
